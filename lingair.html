@@ -1,0 +1,69 @@
+<html>
+  <head>
+    <title>Lingair</title>
+    <script type="text/javascript" src="AIRAliases.js">
+    </script>
+    <script type="text/javascript" src="lib/prototype/prototype.js">
+    </script>
+    <script type="text/javascript" src="lib/lingr.js/lingr.js">
+    </script>
+    <script type="text/javascript">
+      var lingr = new Lingr({
+          apiKey: 'bcf040e80cc8474a96a610c055d1a6c4',
+          roomId: 'hBs9ctcgY7E',
+          nickname: 'javascript-api',
+          userMessagesOnly: true,
+          contextLines: 10,
+          useDsr: false,
+          
+          onRoomEntered: function(room){
+              Element.update('roomName', room.name);
+          },
+          
+          onRosterUpdated: function(occupants){
+              Element.update('roster', '');
+              var observerCount = 0;
+              for (var i = 0; i < occupants.length; i++) {
+                  if (occupants[i].nickname) {
+                      new Insertion.Bottom('roster', '<li>' + occupants[i].nickname + '</li>');
+                  }
+                  else {
+                      observerCount++;
+                  }
+              }
+              
+              if (observerCount > 0) {
+                  new Insertion.Bottom('roster', '<li> and ' + observerCount + ' observer(s)</li>');
+              }
+          },
+          
+          onMessagesReceived: function(messages){
+              for (var i = 0; i < messages.length; i++) {
+                  new Insertion.Bottom('messages', '<li><b>' + (messages[i].type == 'private' ? 'Private message from ' : '') + messages[i].nickname + '</b>: ' + messages[i].text + '</li>');
+              }
+              alert("");
+          },
+          
+          onApiFailure: function(json){
+              alert('API failure: ' + json.error.message);
+          }
+      });
+      
+      Event.observe(window, 'load', function(){
+          setTimeout(lingr.start.bind(lingr), 100)
+      });
+      Field.activate('message');
+    </script>
+  </head>
+  <body>
+    <h1 id="roomName">Entering room...</h1>
+    <form onsubmit="lingr.say($F('message')); $('message').value = ''; return false;">
+      <input id="message" type="text"><input type="submit" value="Say it!">
+    </form><h2>Who's Here</h2>
+    <ul id="roster">
+    </ul>
+    <h2>Messages</h2>
+    <ul id="messages">
+    </ul>
+  </body>
+</html>
