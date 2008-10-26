@@ -8,62 +8,99 @@
     <script type="text/javascript" src="lib/lingr.js/lingr.js">
     </script>
     <script type="text/javascript">
-      var lingr = new Lingr({
-          apiKey: 'bcf040e80cc8474a96a610c055d1a6c4',
-          roomId: 'hBs9ctcgY7E',
-          nickname: 'javascript-api',
-          userMessagesOnly: true,
-          contextLines: 10,
-          useDsr: false,
-          
-          onRoomEntered: function(room){
-              Element.update('roomName', room.name);
-          },
-          
-          onRosterUpdated: function(occupants){
-              Element.update('roster', '');
-              var observerCount = 0;
-              for (var i = 0; i < occupants.length; i++) {
-                  if (occupants[i].nickname) {
-                      new Insertion.Bottom('roster', '<li>' + occupants[i].nickname + '</li>');
-                  }
-                  else {
-                      observerCount++;
-                  }
-              }
-              
-              if (observerCount > 0) {
-                  new Insertion.Bottom('roster', '<li> and ' + observerCount + ' observer(s)</li>');
-              }
-          },
-          
-          onMessagesReceived: function(messages){
-              for (var i = 0; i < messages.length; i++) {
-                  new Insertion.Bottom('messages', '<li><b>' + (messages[i].type == 'private' ? 'Private message from ' : '') + messages[i].nickname + '</b>: ' + messages[i].text + '</li>');
-              }
-              alert("");
-          },
-          
-          onApiFailure: function(json){
-              alert('API failure: ' + json.error.message);
-          }
-      });
-      
-      Event.observe(window, 'load', function(){
-          setTimeout(lingr.start.bind(lingr), 100)
-      });
+      var lingr;
       Field.activate('message');
+
+      function startLingr(apikey, roomid, nickname){
+          lingr = new Lingr({
+              apiKey: apikey,
+              roomId: roomid,
+              nickname: nickname,
+              userMessagesOnly: true,
+              contextLines: 10,
+              useDsr: false,
+              
+              onRoomEntered: function(room){
+                  Element.update('roomName', room.name);
+              },
+              
+              onRosterUpdated: function(occupants){
+                  Element.update('roster', '');
+                  var observerCount = 0;
+                  for (var i = 0; i < occupants.length; i++) {
+                      if (occupants[i].nickname) {
+                          new Insertion.Bottom('roster', '<li>' + occupants[i].nickname + '</li>');
+                      }
+                      else {
+                          observerCount++;
+                      }
+                  }
+                  
+                  if (observerCount > 0) {
+                      new Insertion.Bottom('roster', '<li> and ' + observerCount + ' observer(s)</li>');
+                  }
+              },
+              
+              onMessagesReceived: function(messages){
+                  for (var i = 0; i < messages.length; i++) {
+                      new Insertion.Bottom('messages', '<li><b>' + (messages[i].type == 'private' ? 'Private message from ' : '') + messages[i].nickname + '</b>: ' + messages[i].text + '</li>');
+                  }
+                  alert('message: ' + messages.last().text + ' from ' + messages.last().nickname);
+              },
+              
+              onApiFailure: function(json){
+                  alert('API failure: ' + json.error.message);
+              }
+          });
+          Element.hide($('setting'));
+          Element.show($('entered'))
+          setTimeout(lingr.start.bind(lingr), 100)
+      };
+
+      function stopLingr(){
+        Element.show($('setting'));
+        Element.hide($('entered'));
+        lingr = null;
+      }
+
+      Event.observe(window, 'load', function(){
+          Element.hide($('entered'));
+      });
     </script>
   </head>
   <body>
-    <h1 id="roomName">Entering room...</h1>
-    <form onsubmit="lingr.say($F('message')); $('message').value = ''; return false;">
-      <input id="message" type="text"><input type="submit" value="Say it!">
-    </form><h2>Who's Here</h2>
-    <ul id="roster">
-    </ul>
-    <h2>Messages</h2>
-    <ul id="messages">
-    </ul>
+    <div id="entered">
+      <h1 id="roomName">Entering room...</h1>
+      <form onsubmit="lingr.say($F('message')); $('message').value = ''; return false;">
+        <input id="message" type="text"><input type="submit" value="Say it!">
+      </form><h2>Who's Here</h2>
+      <ul id="roster">
+      </ul>
+      <h2>Messages</h2>
+      <ul id="messages">
+      </ul>
+      <a href="#" onclick="stopLingr(); return false;">Setting</a>
+    </div>
+    <div id="setting">
+      <h2>Setting</h2>
+      <form onsubmit="startLingr($F('apikey'), $F('roomid'), $F('nickname')); return false;">
+        <label for="apikey">
+          Lingr Api Key
+        </label>
+        <input id="apikey" type="text" value="bcf040e80cc8474a96a610c055d1a6c4">
+        <br/>
+        <label for="roomid">
+          Room Id
+        </label>
+        <input id="roomid" type="text" value="hBs9ctcgY7E">
+        <br/>
+        <label for="nickname">
+          Nickname
+        </label>
+        <input id="nickname" type="text" value="air">
+        <br/>
+        <input type="submit" value="Set!">
+      </form>
+    </div>
   </body>
 </html>
