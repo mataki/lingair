@@ -5,6 +5,7 @@
 * inform new messages by like growl
 * task tray
 * save setting to DB
+* login keeping (logout by passing several times)
 ==================================================================
  fixed
 ==================================================================
